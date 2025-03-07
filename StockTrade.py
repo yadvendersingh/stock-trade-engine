@@ -3,6 +3,8 @@ import time
 from Order import Order
 from OrderBook import OrderBook
 from concurrent.futures import ThreadPoolExecutor
+from StockHashTable import StockHashTable
+
 
 # Constant value to define limit of tickers
 MAX_TICKERS = 10
@@ -14,7 +16,7 @@ ORDERS_PER_STOCKBROKER = 10
 # It also contains a global order id generator to assign unique order id to each order
 class StockTrade:
     def __init__(self):
-        self.order_books = []                                   # List of OrderBook objects
+        self.order_books = StockHashTable(MAX_TICKERS)                                   # List of OrderBook objects
         self.global_order_id = self._id_generator()             # Global order id to assign unique order id to each order
         self.ticker_symbols = [f"Ticker_{i}" for i in range(1, MAX_TICKERS+1)]
         self.executor = ThreadPoolExecutor(max_workers=20)      # Executor to run threads for matching buy orders with sell orders
@@ -30,14 +32,11 @@ class StockTrade:
     # If the OrderBook object is not present in the list, it creates a new OrderBook object
     # and appends it to the list
     def get_order_book_by_ticker(self, ticker):
-        for book in self.order_books:
-            if book.ticker == ticker:
-                return book
-        if len(self.order_books) == MAX_TICKERS:
-            print("Max tickers reached.")
-            return None
+        order_book = self.order_books.get(ticker)
+        if order_book is not None:
+            return order_book
         order_book = OrderBook(ticker)
-        self.order_books.append(order_book)
+        self.order_books.add(ticker, order_book)
         return order_book
         
     # Function to execute an order
@@ -81,13 +80,14 @@ class StockTrade:
                     quantity = random.randint(1, 100)
                     price = round(random.uniform(10.0, 1000.0), 2)
                     self.execute_order(order_type, ticker, quantity, price)
-                    time.sleep(0.1)
+                    time.sleep(0.01)
         
     # Function to print the order books
     # It iterates through the order_books list and prints the buy and sell orders in each OrderBook object
     def print_order_books(self):
         print("Order Books:")
-        for book in self.order_books:
+        for ticker in self.ticker_symbols:
+            book = self.get_order_book_by_ticker(ticker)
             print(f"Ticker: {book.ticker}")
             head = book.buy_orders_head.next
             while head and head.order_id != -1:
@@ -107,8 +107,8 @@ def main():
         number_of_stockbrokers = int(input("Enter number of stockbrokers: "))
         orders_per_stockbroker = int(input("Enter number of orders per stockbroker: "))
     else:
-        number_of_stockbrokers = 10
-        orders_per_stockbroker = 10
+        number_of_stockbrokers = NUM_OF_STOCKBROKERS
+        orders_per_stockbroker = ORDERS_PER_STOCKBROKER
     executor = ThreadPoolExecutor(max_workers=min(number_of_stockbrokers, 20))
     for _ in range(number_of_stockbrokers):
         executor.submit(stockTrade.order_simulator, orders_per_stockbroker, is_manual=='y')
