@@ -78,7 +78,7 @@ class OrderBook:
                     break
             else:
                 # Thread sleep for context switching to other threads in thread pool
-                time.sleep(0.01)
+                time.sleep(0.001)
 
     # Settle an order by moving it to the tail of the order list
     def settle_order(self, order):

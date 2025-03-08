@@ -1,6 +1,6 @@
 # Stock Trade Engine
 
-A simple, multi-threaded stock trading simulation engine that matches buy and sell orders in real-time using a doubly linked list based order book implementation.
+A simple, multi-threaded stock trading simulation engine that matches buy and sell orders in real-time using a doubly linked list based order book implementation and custom hash table implementation for tickers management.
 
 ## Features
 
@@ -55,6 +55,8 @@ For example:
 ```
 Enter order (format: BUY/SELL ticker quantity price): BUY Ticker_1 50 125.50
 ```
+### Order Books HashMap
+The custom hashmap is initialized with size of `MAX_TICKERS` and there are functions to add, get and delete order books based on the ticker value
 
 ### Automated Simulation
 Enter `n` when prompted for manual input to run an automated simulation with random orders.
@@ -62,7 +64,7 @@ Number of Stockbrokers and Orders per Stockbroker can be configured for automate
 
 ## How It Works
 
-1. The system creates an order book for each stock ticker using `MAX_TICKERS`
+1. Automated simulation creates an order book for each stock ticker using `MAX_TICKERS`
 2. `BUY` and `SELL` orders are added to their respective linked lists of the OrderBook of given ticker
 3. `BUY` orders are the match drivers. For each buy order, a separate thread from thread pool is started that attempts to match it with available sell orders. The time complexity of matching is `O(n)` as the thread linearly scans sell orders linkedlist
 4. Matching occurs when a buy order price is greater than or equal to a sell order price

@@ -7,7 +7,7 @@ from StockHashTable import StockHashTable
 
 
 # Constant value to define limit of tickers
-MAX_TICKERS = 10
+MAX_TICKERS = 1024
 ORDER_TIMEOUT = 3
 NUM_OF_STOCKBROKERS = 10
 ORDERS_PER_STOCKBROKER = 10
@@ -18,7 +18,7 @@ class StockTrade:
     def __init__(self):
         self.order_books = StockHashTable(MAX_TICKERS)                                   # List of OrderBook objects
         self.global_order_id = self._id_generator()             # Global order id to assign unique order id to each order
-        self.ticker_symbols = [f"Ticker_{i}" for i in range(1, MAX_TICKERS+1)]
+        self.ticker_symbols = []
         self.executor = ThreadPoolExecutor(max_workers=20)      # Executor to run threads for matching buy orders with sell orders
 
     # Function to generate unique order id in a thread-safe manner
@@ -35,6 +35,7 @@ class StockTrade:
         order_book = self.order_books.get(ticker)
         if order_book is not None:
             return order_book
+        self.ticker_symbols.append(ticker)
         order_book = OrderBook(ticker)
         self.order_books.add(ticker, order_book)
         return order_book
@@ -80,7 +81,7 @@ class StockTrade:
                     quantity = random.randint(1, 100)
                     price = round(random.uniform(10.0, 1000.0), 2)
                     self.execute_order(order_type, ticker, quantity, price)
-                    time.sleep(0.01)
+                    time.sleep(0.001)
         
     # Function to print the order books
     # It iterates through the order_books list and prints the buy and sell orders in each OrderBook object
@@ -109,6 +110,8 @@ def main():
     else:
         number_of_stockbrokers = NUM_OF_STOCKBROKERS
         orders_per_stockbroker = ORDERS_PER_STOCKBROKER
+        for i in range(MAX_TICKERS):
+            stockTrade.get_order_book_by_ticker(f"Ticker_{i}")
     executor = ThreadPoolExecutor(max_workers=min(number_of_stockbrokers, 20))
     for _ in range(number_of_stockbrokers):
         executor.submit(stockTrade.order_simulator, orders_per_stockbroker, is_manual=='y')
