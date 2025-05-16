@@ -16,10 +16,10 @@ class OrderBook:
         self.buy_orders_tail.prev = self.buy_orders_head
         self.sell_orders_head.next = self.sell_orders_tail
         self.sell_orders_tail.prev = self.sell_orders_head
-        self.buy_orders_head.matching_order = True
-        self.sell_orders_head.matching_order = True
-        self.buy_orders_tail.matching_order = True
-        self.sell_orders_tail.matching_order = True
+        self.buy_orders_head.matching_order.set()
+        self.sell_orders_head.matching_order.set()
+        self.buy_orders_tail.matching_order.set()
+        self.sell_orders_tail.matching_order.set()
 
     # Add an order to the order book
     def add_order(self, order):
@@ -39,7 +39,7 @@ class OrderBook:
     # This function runs in a thread for certain time (timeout) to match the buy order with sell orders
     # If the buy order is not completely settled within the timeout, it is settled with the remaining quantity
     def match_buy_orders(self, order, timeout=2):
-        order.matching_order = True
+        order.matching_order.set()
         start_time = time.time()
         
         # Continue matching until the buy order is completely settled or timeout occurs
@@ -54,11 +54,11 @@ class OrderBook:
             # Find the first sell order with price less than or equal to the buy order price
             # Continue to the next sell order till the price is less than or equal to the buy order price 
             # and the sell order is active
-            while head and head.matching_order and head.price<=order.price and head.active_quantity > 0:
+            while head and head.matching_order.is_set() and head.price<=order.price and head.active_quantity > 0:
                 head = head.next
             # Match the buy order with the sell order if the price is less than or equal to the buy order price
             if head and head.price <= order.price and head.active_quantity > 0:
-                head.matching_order = True
+                head.matching_order.set()
                 quantity = min(order.active_quantity, head.active_quantity)
                 order.active_quantity -= quantity
                 order.settled_quantity += quantity
@@ -74,7 +74,7 @@ class OrderBook:
                     self.settle_order(head)
                 if order.active_quantity == 0:
                     self.settle_order(order)
-                    head.matching_order = False
+                    head.matching_order.clear()
                     break
             else:
                 # Thread sleep for context switching to other threads in thread pool
@@ -96,4 +96,4 @@ class OrderBook:
             order.prev = self.sell_orders_tail.prev
             self.sell_orders_tail.prev.next = order
             self.sell_orders_tail.prev = order
-        order.matching_order = False
+        order.matching_order.clear()

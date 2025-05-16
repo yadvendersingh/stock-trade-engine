@@ -1,8 +1,10 @@
 # This class defines the structure of an order and it acts as a node in the order book
+import threading
+
 class Order:
     def __init__(self, order_id, order_type, quantity=0, price=0):
         self.order_id = order_id                #Unique Order ID
-        self.matching_order = False             #Locking flag to prevent multiple matching of same order
+        self.matching_order = threading.Event()             #Locking flag to prevent multiple matching of same order
         self.order_type = order_type            #Type of order (BUY/SELL)
         self.active_quantity = quantity         #Active quantity available to trade
         self.price = price                      #Price of the order
