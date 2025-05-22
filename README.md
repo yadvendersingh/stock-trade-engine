@@ -1,6 +1,6 @@
 # Stock Trade Engine
 
-A simple, multi-threaded stock trading simulation engine that matches buy and sell orders in real-time using a doubly linked list based order book implementation and custom hash table implementation for tickers management. This is an implementation of a lock-free mechanism to prevent deadlocks in a race condition by using thread-safe variables.
+A simple, multi-threaded stock trading simulation engine that matches buy and sell orders in real-time using a doubly linked list based order book implementation and custom hash table implementation for tickers management. This is an implementation of a lock-free mechanism to prevent deadlocks in a race condition by using CAS technique and thread-safe variables.
 
 ## Features
 

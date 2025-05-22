@@ -50,8 +50,7 @@ class OrderBook:
             while head != self.sell_orders_tail:
                 if head.price <= order.price and head.active_quantity > 0 and not head.matching_order.is_set():
                     head.matching_order.set()
-                    head.match_counter.next()
-                    expected_counter = head.match_counter.get()
+                    expected_counter = next(head.match_counter)
 
                     quantity = min(order.active_quantity, head.active_quantity)
 
@@ -62,7 +61,7 @@ class OrderBook:
                     new_order_total_price = order.total_price + quantity * head.price
                     new_head_total_price = head.total_price + quantity * head.price
 
-                    if expected_counter == head.match_counter.get():
+                    if expected_counter == next(head.match_counter)-1:
                         order.active_quantity = new_order_active_quantity
                         order.settled_quantity = new_order_settled_quantity
                         head.active_quantity = new_head_active_quantity
